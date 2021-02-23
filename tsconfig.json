@@ -2,8 +2,9 @@
 	"compilerOptions": {
 		"target": "es6",
 		"baseUrl": "./src",
-		"module": "commonjs",
 		"rootDir": "src",
+		"module": "commonjs",
+		"allowJs": true,
 		"outDir": "dist",
 		"sourceMap": true,
 		"resolveJsonModule": true,
@@ -19,6 +20,7 @@
 		"src/**/*.ts"
 	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"jest.config.js"
 	]
 }
