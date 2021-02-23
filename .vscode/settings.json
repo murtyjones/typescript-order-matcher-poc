@@ -1,0 +1,15 @@
+{
+	"javascript.preferences.importModuleSpecifier": "relative",
+	"typescript.preferences.importModuleSpecifier": "non-relative",
+	"npm.packageManager": "npm",
+	"eslint.packageManager": "npm",
+	"editor.formatOnPaste": true,
+	"editor.formatOnSave": true,
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"debug.javascript.usePreview": false,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": true
+	},
+}
