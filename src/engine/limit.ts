@@ -1,8 +1,8 @@
 import book, { OrderBook } from 'engine/orderBook';
 import { IOrder, ITrade } from 'types';
 
-class Limit {
-  constructor(private book: OrderBook) {}
+export class Limit {
+  constructor(public book: OrderBook) {}
 
   process = (order: IOrder): ITrade[] => {
     if (order.side === 'buy') {
@@ -13,12 +13,12 @@ class Limit {
     throw new Error('Side not recognized!');
   };
 
-  processLimitBuy = (order: IOrder): ITrade[] => {
+  private processLimitBuy = (order: IOrder): ITrade[] => {
     const trades: ITrade[] = [];
     const sellCount = this.book.sells.length;
     // Check that we have at least one matching order
     const hasAtLeastOneMatchingOrder =
-      sellCount !== 0 && this.book.sells[sellCount - 1]!.price < order.price;
+      sellCount !== 0 && this.book.sells[sellCount - 1]!.price <= order.price;
     if (hasAtLeastOneMatchingOrder) {
       // Traverse all orders that match
       for (let i = sellCount - 1; i >= 0; i--) {
@@ -58,12 +58,12 @@ class Limit {
     return trades;
   };
 
-  processLimitSell = (order: IOrder): ITrade[] => {
+  private processLimitSell = (order: IOrder): ITrade[] => {
     const trades: ITrade[] = [];
-    const l = this.book.sells.length;
+    const l = this.book.buys.length;
     // Check that we have at least one matching order
     const hasAtLeastOneMatchingOrder =
-      l !== 0 && this.book.sells[l - 1]!.price < order.price;
+      l !== 0 && this.book.buys[l - 1]!.price >= order.price;
     if (hasAtLeastOneMatchingOrder) {
       for (let i = l - 1; i >= 0; i--) {
         const buyOrder = this.book.buys[i]!;
@@ -78,6 +78,22 @@ class Limit {
             amount: order.amount,
             price: buyOrder.price,
           });
+          buyOrder.amount -= order.amount;
+          if (buyOrder.amount === 0) {
+            this.book.removeBuyOrder(i);
+          }
+          return trades;
+        }
+        if (buyOrder.amount < order.amount) {
+          trades.push({
+            takerOrderId: order.id,
+            makerOrderId: buyOrder.id,
+            amount: buyOrder.amount,
+            price: buyOrder.price,
+          });
+          order.amount -= buyOrder.amount;
+          this.book.removeBuyOrder(i);
+          continue;
         }
       }
     }
