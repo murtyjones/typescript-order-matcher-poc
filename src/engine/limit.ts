@@ -1,7 +1,7 @@
 import book, { OrderBook } from 'engine/orderBook';
 import { IOrder, ITrade } from 'types';
 
-class Processor {
+class Limit {
   constructor(private book: OrderBook) {}
 
   process = (order: IOrder): ITrade[] => {
@@ -87,4 +87,4 @@ class Processor {
   };
 }
 
-export default new Processor(book);
+export default new Limit(book);
