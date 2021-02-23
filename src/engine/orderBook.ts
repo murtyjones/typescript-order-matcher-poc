@@ -33,7 +33,7 @@ export class OrderBook implements IOrderBook {
       this.buys.push(order);
     } else {
       // Otherwise, put order into array
-      this.buys.splice(i, 0, order);
+      this.buys.splice(i + 1, 0, order);
     }
   };
 
@@ -49,7 +49,7 @@ export class OrderBook implements IOrderBook {
     if (i == l - 1) {
       this.sells.push(order);
     } else {
-      this.sells.splice(i, 0, order);
+      this.sells.splice(i + 1, 0, order);
     }
   };
 
