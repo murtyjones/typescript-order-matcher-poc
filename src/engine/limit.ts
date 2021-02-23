@@ -13,7 +13,6 @@ class Limit {
     throw new Error('Side not recognized!');
   };
 
-  // if there are sells and t
   processLimitBuy = (order: IOrder): ITrade[] => {
     const trades: ITrade[] = [];
     const sellCount = this.book.sells.length;
