@@ -23,8 +23,8 @@ export class OrderBook implements IOrderBook {
     const l = this.buys.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
-      const buyOrder = this.buys[i];
-      if (buyOrder!.price < order.price) {
+      const buyOrder = this.buys[i]!;
+      if (buyOrder.price < order.price) {
         break;
       }
     }
@@ -41,8 +41,8 @@ export class OrderBook implements IOrderBook {
     const l = this.sells.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
-      const sellOrder = this.sells[i];
-      if (sellOrder!.price > order.price) {
+      const sellOrder = this.sells[i]!;
+      if (sellOrder.price > order.price) {
         break;
       }
     }
