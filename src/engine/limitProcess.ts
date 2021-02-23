@@ -7,8 +7,10 @@ class Processor {
   process = (order: IOrder): ITrade[] => {
     if (order.side === 'buy') {
       return this.processLimitBuy(order);
+    } else if (order.side === 'sell') {
+      return this.processLimitSell(order);
     }
-    return this.processLimitSell(order);
+    throw new Error('Side not recognized!');
   };
 
   // if there are sells and t
