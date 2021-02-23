@@ -32,3 +32,21 @@ test('should order the sells from highest price to lowest', () => {
   const isSortedHighestToLowest = (a: number, b: number) => b - a;
   expect(sellPrices).toStrictEqual(sellPrices.sort(isSortedHighestToLowest));
 });
+
+test('should remove the correct buy order', () => {
+  const book = new OrderBook();
+  book.add({ id: 1, amount: 100, price: 1.21, side: 'buy' });
+  book.add({ id: 1, amount: 100, price: 1.31, side: 'buy' });
+  book.add({ id: 1, amount: 100, price: 1.35, side: 'buy' });
+  book.removeBuyOrder(1);
+  expect(book.buys.map((e) => e.price).includes(1.31)).toBeFalsy();
+});
+
+test('should remove the correct sell order', () => {
+  const book = new OrderBook();
+  book.add({ id: 1, amount: 100, price: 1.35, side: 'sell' });
+  book.add({ id: 1, amount: 100, price: 1.31, side: 'sell' });
+  book.add({ id: 1, amount: 100, price: 1.21, side: 'sell' });
+  book.removeSellOrder(1);
+  expect(book.sells.map((e) => e.price).includes(1.31)).toBeFalsy();
+});
