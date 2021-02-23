@@ -53,7 +53,7 @@ class Processor {
         }
       }
     }
-    this.book.addBuyOrder(order);
+    this.book.add(order);
     return trades;
   };
 
@@ -80,7 +80,7 @@ class Processor {
         }
       }
     }
-    this.book.addSellOrder(order);
+    this.book.add(order);
     return trades;
   };
 }

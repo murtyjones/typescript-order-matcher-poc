@@ -9,11 +9,17 @@ export class OrderBook implements IOrderBook {
   public buys: IOrder[] = [];
   public sells: IOrder[] = [];
 
-  // Adds a buy order to the list at the appropriate slot depending on its price
-  addBuyOrder = (order: IOrder): void => {
-    if (order.side !== 'buy') {
-      throw new Error('Cannot add a sell order to the buy book');
+  add = (order: IOrder): void => {
+    if (order.side === 'buy') {
+      return this.addBuyOrder(order);
+    } else if (order.side === 'sell') {
+      return this.addSellOrder(order);
     }
+    throw new Error('Unrecognized side');
+  };
+
+  // Adds a buy order to the list at the appropriate slot depending on its price
+  private addBuyOrder = (order: IOrder): void => {
     const l = this.buys.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
@@ -31,10 +37,7 @@ export class OrderBook implements IOrderBook {
     }
   };
 
-  addSellOrder = (order: IOrder): void => {
-    if (order.side !== 'sell') {
-      throw new Error('Cannot add a buy order to the sell book');
-    }
+  private addSellOrder = (order: IOrder): void => {
     const l = this.sells.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
