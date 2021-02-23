@@ -12,15 +12,23 @@ test('should add an order to the book', () => {
 test('should order the buys from lowest price to highest', () => {
   const book = new OrderBook();
   book.add({ id: 1, amount: 100, price: 1.31, side: 'buy' });
+  book.add({ id: 1, amount: 100, price: 1.35, side: 'buy' });
+  book.add({ id: 1, amount: 100, price: 1.21, side: 'buy' });
   book.add({ id: 2, amount: 100, price: 1.29, side: 'buy' });
-  book.add({ id: 3, amount: 100, price: 1.3, side: 'buy' });
-  expect(book.buys.map((e) => e.price)).toStrictEqual([1.29, 1.3, 1.31]);
+  book.add({ id: 3, amount: 100, price: 1.34, side: 'buy' });
+  const buyPrices = book.buys.map((e) => e.price);
+  const isSortedLowestToHighest = (a: number, b: number) => a - b;
+  expect(buyPrices).toStrictEqual(buyPrices.sort(isSortedLowestToHighest));
 });
 
 test('should order the sells from highest price to lowest', () => {
   const book = new OrderBook();
   book.add({ id: 1, amount: 100, price: 1.31, side: 'sell' });
+  book.add({ id: 1, amount: 100, price: 1.35, side: 'sell' });
+  book.add({ id: 1, amount: 100, price: 1.21, side: 'sell' });
   book.add({ id: 2, amount: 100, price: 1.29, side: 'sell' });
-  book.add({ id: 3, amount: 100, price: 1.3, side: 'sell' });
-  expect(book.sells.map((e) => e.price)).toStrictEqual([1.31, 1.3, 1.29]);
+  book.add({ id: 3, amount: 100, price: 1.34, side: 'sell' });
+  const sellPrices = book.sells.map((e) => e.price);
+  const isSortedHighestToLowest = (a: number, b: number) => b - a;
+  expect(sellPrices).toStrictEqual(sellPrices.sort(isSortedHighestToLowest));
 });
