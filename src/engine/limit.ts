@@ -9,33 +9,33 @@ export class Limit {
     const sellCount = this.book.sells.length;
     // Traverse all orders that match
     for (let i = sellCount - 1; i >= 0; i--) {
-      const sellOrder = this.book.sells[i]!;
-      if (sellOrder.price > order.price) {
+      const makerSellOrder = this.book.sells[i]!;
+      if (makerSellOrder.price > order.price) {
         break;
       }
       // try to fill the full order
-      if (sellOrder.amount >= order.amount) {
+      if (makerSellOrder.amount >= order.amount) {
         trades.push({
           takerOrderId: order.id,
-          makerOrderId: sellOrder.id,
+          makerOrderId: makerSellOrder.id,
           amount: order.amount,
           price: order.price,
         });
-        sellOrder.amount -= order.amount;
-        if (sellOrder.amount === 0) {
+        makerSellOrder.amount -= order.amount;
+        if (makerSellOrder.amount === 0) {
           this.book.removeSellOrder(i);
         }
         return trades;
       }
       // try to fill a partial order and continue
-      if (sellOrder.amount < order.amount) {
+      if (makerSellOrder.amount < order.amount) {
         trades.push({
           takerOrderId: order.id,
-          makerOrderId: sellOrder.id,
-          amount: sellOrder.amount,
-          price: sellOrder.price,
+          makerOrderId: makerSellOrder.id,
+          amount: makerSellOrder.amount,
+          price: makerSellOrder.price,
         });
-        order.amount -= sellOrder.amount;
+        order.amount -= makerSellOrder.amount;
         this.book.removeSellOrder(i);
         continue;
       }
@@ -48,32 +48,32 @@ export class Limit {
     const trades: Trade[] = [];
     const l = this.book.buys.length;
     for (let i = l - 1; i >= 0; i--) {
-      const buyOrder = this.book.buys[i]!;
-      if (buyOrder.price < order.price) {
+      const makerBuyOrder = this.book.buys[i]!;
+      if (makerBuyOrder.price < order.price) {
         break;
       }
       // try to fill entire order
-      if (buyOrder.amount >= order.amount) {
+      if (makerBuyOrder.amount >= order.amount) {
         trades.push({
           takerOrderId: order.id,
-          makerOrderId: buyOrder.id,
+          makerOrderId: makerBuyOrder.id,
           amount: order.amount,
-          price: buyOrder.price,
+          price: makerBuyOrder.price,
         });
-        buyOrder.amount -= order.amount;
-        if (buyOrder.amount === 0) {
+        makerBuyOrder.amount -= order.amount;
+        if (makerBuyOrder.amount === 0) {
           this.book.removeBuyOrder(i);
         }
         return trades;
       }
-      if (buyOrder.amount < order.amount) {
+      if (makerBuyOrder.amount < order.amount) {
         trades.push({
           takerOrderId: order.id,
-          makerOrderId: buyOrder.id,
-          amount: buyOrder.amount,
-          price: buyOrder.price,
+          makerOrderId: makerBuyOrder.id,
+          amount: makerBuyOrder.amount,
+          price: makerBuyOrder.price,
         });
-        order.amount -= buyOrder.amount;
+        order.amount -= makerBuyOrder.amount;
         this.book.removeBuyOrder(i);
         continue;
       }
