@@ -1,0 +1,15 @@
+name: mutation testing
+
+on: push
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install & Build
+        run: npm install
+      - name: Run Stryker
+        run: npx stryker run
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
