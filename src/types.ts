@@ -1,13 +1,13 @@
 export type OrderId = number;
 
-export interface IOrder {
+export interface Order {
   id: OrderId;
   amount: number;
   price: number;
   side: 'buy' | 'sell';
 }
 
-export interface ITrade {
+export interface Trade {
   takerOrderId: number;
   makerOrderId: number;
   amount: number;

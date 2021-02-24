@@ -1,15 +1,15 @@
-import { IOrder } from 'types';
+import { Order } from 'types';
 
 export interface IOrderBook {
-  buys: IOrder[];
-  sells: IOrder[];
+  buys: Order[];
+  sells: Order[];
 }
 
 export class OrderBook implements IOrderBook {
-  public buys: IOrder[] = [];
-  public sells: IOrder[] = [];
+  public buys: Order[] = [];
+  public sells: Order[] = [];
 
-  add = (order: IOrder): void => {
+  add = (order: Order): void => {
     if (order.side === 'buy') {
       return this.addBuyOrder(order);
     } else if (order.side === 'sell') {
@@ -19,7 +19,7 @@ export class OrderBook implements IOrderBook {
   };
 
   // Adds a buy order to the list at the appropriate slot depending on its price
-  private addBuyOrder = (order: IOrder): void => {
+  private addBuyOrder = (order: Order): void => {
     const l = this.buys.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
@@ -37,7 +37,7 @@ export class OrderBook implements IOrderBook {
     }
   };
 
-  private addSellOrder = (order: IOrder): void => {
+  private addSellOrder = (order: Order): void => {
     const l = this.sells.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {

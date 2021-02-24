@@ -1,9 +1,9 @@
 import { OrderBook } from 'engine/orderBook';
-import { IOrder } from 'types';
+import { Order } from 'types';
 
 test('should add an order to the book', () => {
   const book = new OrderBook();
-  const order: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+  const order: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
   expect(book.buys.length).toEqual(0);
   book.add(order);
   expect(book.buys.length).toEqual(1);

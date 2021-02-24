@@ -1,10 +1,10 @@
 import book, { OrderBook } from 'engine/orderBook';
-import { IOrder, ITrade } from 'types';
+import { Order, Trade } from 'types';
 
 export class Limit {
   constructor(public book: OrderBook) {}
 
-  process = (order: IOrder): ITrade[] => {
+  process = (order: Order): Trade[] => {
     if (order.side === 'buy') {
       return this.processLimitBuy(order);
     } else if (order.side === 'sell') {
@@ -13,8 +13,8 @@ export class Limit {
     throw new Error('Side not recognized!');
   };
 
-  private processLimitBuy = (order: IOrder): ITrade[] => {
-    const trades: ITrade[] = [];
+  private processLimitBuy = (order: Order): Trade[] => {
+    const trades: Trade[] = [];
     const sellCount = this.book.sells.length;
     // Check that we have at least one matching order
     const hasAtLeastOneMatchingOrder =
@@ -58,8 +58,8 @@ export class Limit {
     return trades;
   };
 
-  private processLimitSell = (order: IOrder): ITrade[] => {
-    const trades: ITrade[] = [];
+  private processLimitSell = (order: Order): Trade[] => {
+    const trades: Trade[] = [];
     const l = this.book.buys.length;
     // Check that we have at least one matching order
     const hasAtLeastOneMatchingOrder =

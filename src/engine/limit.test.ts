@@ -1,12 +1,12 @@
 import { Limit } from 'engine/limit';
 import { OrderBook } from 'engine/orderBook';
-import { IOrder } from 'types';
+import { Order } from 'types';
 
 describe('Limit order', () => {
   describe('a buy covered precisely by one sell order', () => {
     it('should execute when buy comes first', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: IOrder = { id: 2, amount: 100, price: 1.29, side: 'sell' };
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
       const limit = new Limit(new OrderBook());
       limit.process(buy);
       limit.process(sell);
@@ -15,8 +15,8 @@ describe('Limit order', () => {
     });
 
     it('should execute when buy comes second', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: IOrder = { id: 2, amount: 100, price: 1.29, side: 'sell' };
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
       const limit = new Limit(new OrderBook());
       limit.process(sell);
       limit.process(buy);
@@ -27,8 +27,8 @@ describe('Limit order', () => {
 
   describe('a buy order with no matching sell', () => {
     it('should not execute when the buy happens first', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: IOrder = { id: 2, amount: 100, price: 1.3, side: 'sell' };
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
       const limit = new Limit(new OrderBook());
       limit.process(buy);
       limit.process(sell);
@@ -37,8 +37,8 @@ describe('Limit order', () => {
     });
 
     it('should not execute when the buy happens second', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: IOrder = { id: 2, amount: 100, price: 1.3, side: 'sell' };
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
       const limit = new Limit(new OrderBook());
       limit.process(sell);
       limit.process(buy);
@@ -49,8 +49,8 @@ describe('Limit order', () => {
 
   describe('a buy fully covered by multiple sells', () => {
     it('should fully execute when buying happens first', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: IOrder[] = [
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sells: Order[] = [
         { id: 2, amount: 33, price: 1.29, side: 'sell' },
         { id: 3, amount: 33, price: 1.27, side: 'sell' },
         { id: 4, amount: 35, price: 1.29, side: 'sell' },
@@ -67,8 +67,8 @@ describe('Limit order', () => {
     });
 
     it('should fully execute when buying happens second', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: IOrder[] = [
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sells: Order[] = [
         { id: 2, amount: 33, price: 1.29, side: 'sell' },
         { id: 3, amount: 33, price: 1.27, side: 'sell' },
         { id: 4, amount: 35, price: 1.29, side: 'sell' },
@@ -87,8 +87,8 @@ describe('Limit order', () => {
 
   describe('a sell fully covered by multiple buys', () => {
     it('should fully execute when buying happens first', () => {
-      const sell: IOrder = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: IOrder[] = [
+      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+      const buys: Order[] = [
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
         { id: 4, amount: 90, price: 1.31, side: 'buy' },
@@ -107,8 +107,8 @@ describe('Limit order', () => {
     });
 
     it('should fully execute when buying happens second', () => {
-      const sell: IOrder = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: IOrder[] = [
+      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+      const buys: Order[] = [
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
         { id: 4, amount: 90, price: 1.31, side: 'buy' },
@@ -127,8 +127,8 @@ describe('Limit order', () => {
 
   describe('a buy partially covered by multiple sells', () => {
     it('should partially execute when buying happens first', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: IOrder[] = [
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sells: Order[] = [
         { id: 2, amount: 1, price: 1.29, side: 'sell' },
         { id: 3, amount: 20, price: 1.3, side: 'sell' },
       ];
@@ -146,8 +146,8 @@ describe('Limit order', () => {
     });
 
     it('should partially execute when buying happens second', () => {
-      const buy: IOrder = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: IOrder[] = [
+      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+      const sells: Order[] = [
         { id: 2, amount: 1, price: 1.29, side: 'sell' },
         { id: 3, amount: 20, price: 1.3, side: 'sell' },
       ];
@@ -167,8 +167,8 @@ describe('Limit order', () => {
 
   describe('a sell partially covered by multiple buys', () => {
     it('should partially execute when buying happens first', () => {
-      const sell: IOrder = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: IOrder[] = [
+      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+      const buys: Order[] = [
         { id: 2, amount: 1, price: 1.28, side: 'buy' },
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
@@ -187,8 +187,8 @@ describe('Limit order', () => {
     });
 
     it('should partially execute when buying happens second', () => {
-      const sell: IOrder = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: IOrder[] = [
+      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+      const buys: Order[] = [
         { id: 2, amount: 1, price: 1.28, side: 'buy' },
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
