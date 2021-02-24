@@ -18,7 +18,6 @@ export class OrderBook implements IOrderBook {
     throw new Error('Unrecognized side');
   };
 
-  // Adds a buy order to the list at the appropriate slot depending on its price
   private addBuyOrder = (order: Order): void => {
     const l = this.buys.length;
     let i = l - 1;
