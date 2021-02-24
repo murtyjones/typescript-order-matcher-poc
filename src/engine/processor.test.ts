@@ -1,5 +1,5 @@
-import { Limit } from 'engine/limit';
 import { OrderBook } from 'engine/orderBook';
+import { Processor } from 'engine/processor';
 import { Order } from 'types';
 
 describe('Limit order', () => {
@@ -7,7 +7,7 @@ describe('Limit order', () => {
     it('should execute when buy comes first', () => {
       const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
       const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(buy);
       limit.process(sell);
       expect(limit.book.buys.length).toBe(0);
@@ -17,7 +17,7 @@ describe('Limit order', () => {
     it('should execute when buy comes second', () => {
       const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
       const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(sell);
       limit.process(buy);
       expect(limit.book.buys.length).toBe(0);
@@ -29,7 +29,7 @@ describe('Limit order', () => {
     it('should not execute when the buy happens first', () => {
       const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
       const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(buy);
       limit.process(sell);
       expect(limit.book.buys.length).toBe(1);
@@ -39,7 +39,7 @@ describe('Limit order', () => {
     it('should not execute when the buy happens second', () => {
       const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
       const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(sell);
       limit.process(buy);
       expect(limit.book.buys.length).toBe(1);
@@ -55,7 +55,7 @@ describe('Limit order', () => {
         { id: 3, amount: 33, price: 1.27, side: 'sell' },
         { id: 4, amount: 35, price: 1.29, side: 'sell' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(buy);
       sells.forEach((each) => {
         limit.process(each);
@@ -73,7 +73,7 @@ describe('Limit order', () => {
         { id: 3, amount: 33, price: 1.27, side: 'sell' },
         { id: 4, amount: 35, price: 1.29, side: 'sell' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       sells.forEach((each) => {
         limit.process(each);
       });
@@ -93,7 +93,7 @@ describe('Limit order', () => {
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
         { id: 4, amount: 90, price: 1.31, side: 'buy' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       buys.forEach((each) => {
         limit.process(each);
       });
@@ -113,7 +113,7 @@ describe('Limit order', () => {
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
         { id: 4, amount: 90, price: 1.31, side: 'buy' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(sell);
       buys.forEach((each) => {
         limit.process(each);
@@ -132,7 +132,7 @@ describe('Limit order', () => {
         { id: 2, amount: 1, price: 1.29, side: 'sell' },
         { id: 3, amount: 20, price: 1.3, side: 'sell' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(buy);
       sells.forEach((each) => {
         limit.process(each);
@@ -151,7 +151,7 @@ describe('Limit order', () => {
         { id: 2, amount: 1, price: 1.29, side: 'sell' },
         { id: 3, amount: 20, price: 1.3, side: 'sell' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       sells.forEach((each) => {
         limit.process(each);
       });
@@ -173,7 +173,7 @@ describe('Limit order', () => {
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       buys.forEach((each) => {
         limit.process(each);
       });
@@ -193,7 +193,7 @@ describe('Limit order', () => {
         { id: 2, amount: 1, price: 1.29, side: 'buy' },
         { id: 3, amount: 20, price: 1.3, side: 'buy' },
       ];
-      const limit = new Limit(new OrderBook());
+      const limit = new Processor(new OrderBook());
       limit.process(sell);
       buys.forEach((each) => {
         limit.process(each);

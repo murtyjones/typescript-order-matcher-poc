@@ -1,7 +1,7 @@
 import book, { OrderBook } from 'engine/orderBook';
 import { Order, Trade } from 'types';
 
-export class Limit {
+export class Processor {
   constructor(public book: OrderBook) {}
 
   process = (order: Order): Trade[] => {
@@ -102,4 +102,4 @@ export class Limit {
   };
 }
 
-export default new Limit(book);
+export default new Processor(book);
