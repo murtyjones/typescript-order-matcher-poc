@@ -3,77 +3,123 @@ import { Processor } from 'engine/processor';
 import flatten from 'lodash.flatten';
 import { Order, Trade } from 'types';
 
-describe('Limit order', () => {
-  let processor = new Processor(new OrderBook());
+const getMinPrice = (orders: Order[]): number => {
+  return orders.reduce((acc, each) => {
+    if (each.price < acc) {
+      acc = each.price;
+    }
+    return acc;
+  }, Infinity);
+};
 
+const getMaxPrice = (orders: Order[]): number => {
+  return orders.reduce((acc, each) => {
+    if (each.price > acc) {
+      acc = each.price;
+    }
+    return acc;
+  }, 0);
+};
+
+describe('Order Processor', () => {
+  let processor = new Processor(new OrderBook());
   beforeEach(() => {
     processor = new Processor(new OrderBook());
   });
-
   describe('a buy covered precisely by one sell order', () => {
-    it('should execute when buy comes first', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.3, side: 'buy' };
-      const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
+    const buy: Order = { id: 1, amount: 100, price: 1.3, side: 'buy' };
+    const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
+    describe('when buys happen first', () => {
       const trade: Trade = {
         takerOrderId: sell.id,
         makerOrderId: buy.id,
         amount: 100,
         price: 1.29,
       };
-
-      expect(processor.process(buy)).toStrictEqual([]);
-      expect(processor.process(sell)).toStrictEqual([trade]);
-      expect(processor.book.buys.length).toBe(0);
-      expect(processor.book.sells.length).toBe(0);
+      it('should return just one trade', () => {
+        expect(processor.process({ ...buy })).toStrictEqual([]);
+        expect(processor.process({ ...sell })).toStrictEqual([trade]);
+      });
+      it('leave no open buys', () => {
+        processor.process({ ...buy });
+        processor.process({ ...sell });
+        expect(processor.book.buys.length).toBe(0);
+      });
+      it('leave no open sells', () => {
+        processor.process({ ...buy });
+        processor.process({ ...sell });
+        expect(processor.book.sells.length).toBe(0);
+      });
     });
-
-    it('should execute when buy comes second', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.3, side: 'buy' };
-      const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };
+    describe('when buys happen second', () => {
       const trade: Trade = {
-        takerOrderId: buy.id,
         makerOrderId: sell.id,
+        takerOrderId: buy.id,
         amount: 100,
         price: 1.29,
       };
-
-      expect(processor.process(sell)).toStrictEqual([]);
-      expect(processor.process(buy)).toStrictEqual([trade]);
-      expect(processor.book.buys.length).toBe(0);
-      expect(processor.book.sells.length).toBe(0);
+      it('should return just one trade', () => {
+        expect(processor.process({ ...sell })).toStrictEqual([]);
+        expect(processor.process({ ...buy })).toStrictEqual([trade]);
+      });
+      it('leave no open buys', () => {
+        processor.process({ ...sell });
+        processor.process({ ...buy });
+        expect(processor.book.buys.length).toBe(0);
+      });
+      it('leave no open sells', () => {
+        processor.process({ ...sell });
+        processor.process({ ...buy });
+        expect(processor.book.sells.length).toBe(0);
+      });
     });
   });
-
   describe('a buy order with no matching sell', () => {
-    it('should not execute when the buy happens first', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
-
-      expect(processor.process(buy)).toStrictEqual([]);
-      expect(processor.process(sell)).toStrictEqual([]);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.sells.length).toBe(1);
+    const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+    const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
+    describe('when buys happen first', () => {
+      it('should return no trades', () => {
+        expect(processor.process({ ...buy })).toStrictEqual([]);
+        expect(processor.process({ ...sell })).toStrictEqual([]);
+      });
+      it('should leave the buy order in the book', () => {
+        processor.process({ ...buy });
+        processor.process({ ...sell });
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should leave the sell order in the book', () => {
+        processor.process({ ...buy });
+        processor.process({ ...sell });
+        expect(processor.book.sells.length).toBe(1);
+      });
     });
-
-    it('should not execute when the buy happens second', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sell: Order = { id: 2, amount: 100, price: 1.3, side: 'sell' };
-
-      expect(processor.process(sell)).toStrictEqual([]);
-      expect(processor.process(buy)).toStrictEqual([]);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.sells.length).toBe(1);
+    describe('when buys happen second', () => {
+      it('should return no trades', () => {
+        expect(processor.process({ ...sell })).toStrictEqual([]);
+        expect(processor.process({ ...buy })).toStrictEqual([]);
+      });
+      it('should leave the buy order in the book', () => {
+        processor.process({ ...sell });
+        processor.process({ ...buy });
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should leave the sell order in the book', () => {
+        processor.process({ ...sell });
+        processor.process({ ...buy });
+        expect(processor.book.sells.length).toBe(1);
+      });
     });
   });
-
   describe('a buy fully covered by multiple sells', () => {
-    it('should fully execute when buying happens first', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: Order[] = [
-        { id: 2, amount: 33, price: 1.29, side: 'sell' },
-        { id: 3, amount: 33, price: 1.27, side: 'sell' },
-        { id: 4, amount: 35, price: 1.29, side: 'sell' },
-      ];
+    const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+    const sells: Order[] = [
+      { id: 2, amount: 33, price: 1.29, side: 'sell' },
+      { id: 3, amount: 33, price: 1.27, side: 'sell' },
+      { id: 4, amount: 35, price: 1.29, side: 'sell' },
+    ];
+    const minPrice = getMinPrice([buy, ...sells]);
+    const maxPrice = getMaxPrice([buy, ...sells]);
+    describe('when buys happen first', () => {
       const trades: Trade[] = [
         {
           takerOrderId: sells[0]!.id,
@@ -94,24 +140,35 @@ describe('Limit order', () => {
           price: 1.29,
         },
       ];
-
-      expect(processor.process(buy)).toStrictEqual([]);
-      expect(
-        flatten(sells.map((each) => processor.process(each)))
-      ).toStrictEqual(trades);
-      expect(processor.book.buys.length).toBe(0);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.29);
-      expect(processor.book.sells[0]!.amount).toBe(1);
+      it('should return the expected trades', () => {
+        expect(processor.process({ ...buy })).toStrictEqual([]);
+        expect(
+          flatten(sells.map((each) => processor.process({ ...each })))
+        ).toStrictEqual(trades);
+      });
+      it('should leave no buys in the book', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys.length).toBe(0);
+      });
+      it('should leave one sell in the book', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave one share leftover for the final sell order', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells[0]!.amount).toBe(1);
+      });
+      it('should leave the order with the max price in the book', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells[0]!.price).toBe(maxPrice);
+      });
     });
 
-    it('should fully execute when buying happens second', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: Order[] = [
-        { id: 2, amount: 33, price: 1.29, side: 'sell' },
-        { id: 3, amount: 33, price: 1.27, side: 'sell' },
-        { id: 4, amount: 35, price: 1.29, side: 'sell' },
-      ];
+    describe('when buys happen second', () => {
       const trades: Trade[] = [
         {
           takerOrderId: buy.id,
@@ -132,26 +189,42 @@ describe('Limit order', () => {
           price: 1.29,
         },
       ];
-
-      expect(
-        flatten(sells.map((each) => processor.process(each)))
-      ).toStrictEqual([]);
-      expect(processor.process(buy)).toStrictEqual(trades);
-      expect(processor.book.buys.length).toBe(0);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.29);
-      expect(processor.book.sells[0]!.amount).toBe(1);
+      it('should return the expected trades', () => {
+        expect(
+          flatten(sells.map((each) => processor.process({ ...each })))
+        ).toStrictEqual([]);
+        expect(processor.process({ ...buy })).toStrictEqual(trades);
+      });
+      it('should leave no buys in the book', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.buys.length).toBe(0);
+      });
+      it('should leave one sell in the book', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave one share left in the remaining sell', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.sells[0]!.amount).toBe(1);
+      });
+      it('should leave the highest price in the sells', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.sells[0]!.price).toBe(maxPrice);
+      });
     });
   });
-
   describe('a sell fully covered by multiple buys', () => {
-    it('should fully execute when buying happens first', () => {
-      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: Order[] = [
-        { id: 2, amount: 1, price: 1.29, side: 'buy' },
-        { id: 3, amount: 20, price: 1.3, side: 'buy' },
-        { id: 4, amount: 90, price: 1.31, side: 'buy' },
-      ];
+    const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+    const buys: Order[] = [
+      { id: 2, amount: 1, price: 1.29, side: 'buy' },
+      { id: 3, amount: 20, price: 1.3, side: 'buy' },
+      { id: 4, amount: 90, price: 1.31, side: 'buy' },
+    ];
+    describe('when buying happens first', () => {
       const trades: Trade[] = [
         {
           takerOrderId: sell.id,
@@ -166,26 +239,24 @@ describe('Limit order', () => {
           price: sell.price,
         },
       ];
-
-      expect(
-        flatten(buys.map((each) => processor.process(each)))
-      ).toStrictEqual([]);
-      expect(processor.process(sell)).toStrictEqual(trades);
-      expect(processor.book.sells.length).toBe(0);
-      expect(processor.book.buys.length).toBe(2);
-      expect(processor.book.buys[0]!.price).toBe(1.29);
-      expect(processor.book.buys[0]!.amount).toBe(1);
-      expect(processor.book.buys[1]!.price).toBe(1.3);
-      expect(processor.book.buys[1]!.amount).toBe(10);
+      it('should return the expected trades', () => {
+        expect(
+          flatten(buys.map((each) => processor.process({ ...each })))
+        ).toStrictEqual([]);
+        expect(processor.process({ ...sell })).toStrictEqual(trades);
+      });
+      it('should leave no sells', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.sells.length).toBe(0);
+      });
+      it('should leave two buys', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.buys.length).toBe(2);
+      });
     });
-
-    it('should fully execute when buying happens second', () => {
-      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: Order[] = [
-        { id: 2, amount: 1, price: 1.29, side: 'buy' },
-        { id: 3, amount: 20, price: 1.3, side: 'buy' },
-        { id: 4, amount: 90, price: 1.31, side: 'buy' },
-      ];
+    describe('when buying happens second', () => {
       const trades: Trade[] = [
         {
           takerOrderId: buys[0]!.id,
@@ -206,25 +277,31 @@ describe('Limit order', () => {
           amount: 79,
         },
       ];
-
-      expect(processor.process(sell)).toStrictEqual([]);
-      expect(
-        flatten(buys.map((each) => processor.process(each)))
-      ).toStrictEqual(trades);
-      expect(processor.book.sells.length).toBe(0);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.buys[0]!.price).toBe(1.31);
-      expect(processor.book.buys[0]!.amount).toBe(11);
+      it('should return the expected trades', () => {
+        expect(processor.process({ ...sell })).toStrictEqual([]);
+        expect(
+          flatten(buys.map((each) => processor.process({ ...each })))
+        ).toStrictEqual(trades);
+      });
+      it('should leave no sells', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells.length).toBe(0);
+      });
+      it('should leave one buys because of the order the buys rolled in', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys.length).toBe(1);
+      });
     });
   });
-
   describe('a buy partially covered by multiple sells', () => {
-    it('should partially execute when buying happens first', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: Order[] = [
-        { id: 2, amount: 1, price: 1.29, side: 'sell' },
-        { id: 3, amount: 20, price: 1.3, side: 'sell' },
-      ];
+    const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
+    const sells: Order[] = [
+      { id: 2, amount: 1, price: 1.29, side: 'sell' },
+      { id: 3, amount: 20, price: 1.3, side: 'sell' },
+    ];
+    describe('when buying happens first', () => {
       const trades: Trade[] = [
         {
           takerOrderId: sells[0]!.id,
@@ -233,25 +310,34 @@ describe('Limit order', () => {
           amount: 1,
         },
       ];
-
-      expect(processor.process(buy)).toStrictEqual([]);
-      expect(
-        flatten(sells.map((each) => processor.process(each)))
-      ).toStrictEqual(trades);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.buys[0]!.price).toBe(1.29);
-      expect(processor.book.buys[0]!.amount).toBe(99);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.3);
-      expect(processor.book.sells[0]!.amount).toBe(20);
+      it('should return the expected trades', () => {
+        expect(processor.process({ ...buy })).toStrictEqual([]);
+        expect(
+          flatten(sells.map((each) => processor.process({ ...each })))
+        ).toStrictEqual(trades);
+      });
+      it('should leave one buy', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should leave 99 of the 100 shares in the buy', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys[0]!.amount).toBe(99);
+      });
+      it('should leave one sell', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave the too-expensive sell with its original share count', () => {
+        processor.process({ ...buy });
+        sells.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells[0]!.amount).toBe(sells[1]!.amount);
+      });
     });
-
-    it('should partially execute when buying happens second', () => {
-      const buy: Order = { id: 1, amount: 100, price: 1.29, side: 'buy' };
-      const sells: Order[] = [
-        { id: 2, amount: 1, price: 1.29, side: 'sell' },
-        { id: 3, amount: 20, price: 1.3, side: 'sell' },
-      ];
+    describe('when buying happens second', () => {
       const trades: Trade[] = [
         {
           makerOrderId: sells[0]!.id,
@@ -260,28 +346,42 @@ describe('Limit order', () => {
           amount: 1,
         },
       ];
-
-      expect(
-        flatten(sells.map((each) => processor.process(each)))
-      ).toStrictEqual([]);
-      expect(processor.process(buy)).toStrictEqual(trades);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.buys[0]!.price).toBe(1.29);
-      expect(processor.book.buys[0]!.amount).toBe(99);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.3);
-      expect(processor.book.sells[0]!.amount).toBe(20);
+      it('should return the expected trades', () => {
+        expect(
+          flatten(sells.map((each) => processor.process({ ...each })))
+        ).toStrictEqual([]);
+        expect(processor.process({ ...buy })).toStrictEqual(trades);
+      });
+      it('should leave one buy', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should take one share off of the buy', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.buys[0]!.amount).toBe(99);
+      });
+      it('should leave one sell', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave the too-expensive sell share count unchanged', () => {
+        sells.map((each) => processor.process({ ...each }));
+        processor.process({ ...buy });
+        expect(processor.book.sells[0]!.amount).toBe(20);
+      });
     });
   });
-
   describe('a sell partially covered by multiple buys', () => {
-    it('should partially execute when buying happens first', () => {
-      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: Order[] = [
-        { id: 2, amount: 1, price: 1.28, side: 'buy' },
-        { id: 3, amount: 1, price: 1.29, side: 'buy' },
-        { id: 4, amount: 20, price: 1.3, side: 'buy' },
-      ];
+    const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
+    const buys: Order[] = [
+      { id: 2, amount: 1, price: 1.28, side: 'buy' },
+      { id: 3, amount: 1, price: 1.29, side: 'buy' },
+      { id: 4, amount: 20, price: 1.3, side: 'buy' },
+    ];
+    describe('when buying happens first', () => {
       const trades: Trade[] = [
         {
           makerOrderId: buys[2]!.id,
@@ -296,26 +396,35 @@ describe('Limit order', () => {
           amount: 1,
         },
       ];
-
-      expect(
-        flatten(buys.map((each) => processor.process(each)))
-      ).toStrictEqual([]);
-      expect(processor.process(sell)).toStrictEqual(trades);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.29);
-      expect(processor.book.sells[0]!.amount).toBe(79);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.buys[0]!.price).toBe(1.28);
-      expect(processor.book.buys[0]!.amount).toBe(1);
+      it('should return the expected trades', () => {
+        expect(
+          flatten(buys.map((each) => processor.process({ ...each })))
+        ).toStrictEqual([]);
+        expect(processor.process({ ...sell })).toStrictEqual(trades);
+      });
+      it('should leave one sell', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave 79 shares on the sell', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.sells[0]!.amount).toBe(79);
+      });
+      it('should leave one buy', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should leave the too-cheap buy share count unchanged', () => {
+        buys.map((each) => processor.process({ ...each }));
+        processor.process({ ...sell });
+        expect(processor.book.buys[0]!.amount).toBe(buys[0!]!.amount);
+      });
     });
 
-    it('should partially execute when buying happens second', () => {
-      const sell: Order = { id: 1, amount: 100, price: 1.29, side: 'sell' };
-      const buys: Order[] = [
-        { id: 2, amount: 1, price: 1.28, side: 'buy' },
-        { id: 3, amount: 1, price: 1.29, side: 'buy' },
-        { id: 4, amount: 20, price: 1.3, side: 'buy' },
-      ];
+    describe('when buying happens second', () => {
       const trades: Trade[] = [
         {
           makerOrderId: sell.id,
@@ -330,17 +439,32 @@ describe('Limit order', () => {
           amount: 20,
         },
       ];
-
-      expect(processor.process(sell)).toStrictEqual([]);
-      expect(
-        flatten(buys.map((each) => processor.process(each)))
-      ).toStrictEqual(trades);
-      expect(processor.book.sells.length).toBe(1);
-      expect(processor.book.sells[0]!.price).toBe(1.29);
-      expect(processor.book.sells[0]!.amount).toBe(79);
-      expect(processor.book.buys.length).toBe(1);
-      expect(processor.book.buys[0]!.price).toBe(1.28);
-      expect(processor.book.buys[0]!.amount).toBe(1);
+      it('should return the expected trades', () => {
+        expect(processor.process({ ...sell })).toStrictEqual([]);
+        expect(
+          flatten(buys.map((each) => processor.process({ ...each })))
+        ).toStrictEqual(trades);
+      });
+      it('should leave one sell', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells.length).toBe(1);
+      });
+      it('should leave 79 sell shares', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.sells[0]!.amount).toBe(79);
+      });
+      it('should leave one buy', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys.length).toBe(1);
+      });
+      it('should leave the too-cheap buy share count unchanged', () => {
+        processor.process({ ...sell });
+        buys.map((each) => processor.process({ ...each }));
+        expect(processor.book.buys[0]!.amount).toBe(1);
+      });
     });
   });
 });
