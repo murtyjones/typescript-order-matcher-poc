@@ -13,13 +13,15 @@ export class Limit {
       if (makerSellOrder.price > order.price) {
         break;
       }
+      // We always execute at the best price for the buyer
+      const price = Math.min(makerSellOrder.price, order.price);
       // try to fill the full order
       if (makerSellOrder.amount >= order.amount) {
         trades.push({
           takerOrderId: order.id,
           makerOrderId: makerSellOrder.id,
           amount: order.amount,
-          price: order.price,
+          price,
         });
         makerSellOrder.amount -= order.amount;
         if (makerSellOrder.amount === 0) {
@@ -33,7 +35,7 @@ export class Limit {
           takerOrderId: order.id,
           makerOrderId: makerSellOrder.id,
           amount: makerSellOrder.amount,
-          price: makerSellOrder.price,
+          price,
         });
         order.amount -= makerSellOrder.amount;
         this.book.removeSellOrder(i);
@@ -52,13 +54,15 @@ export class Limit {
       if (makerBuyOrder.price < order.price) {
         break;
       }
+      // We always execute at the best price for the buyer
+      const price = Math.min(makerBuyOrder.price, order.price);
       // try to fill entire order
       if (makerBuyOrder.amount >= order.amount) {
         trades.push({
           takerOrderId: order.id,
           makerOrderId: makerBuyOrder.id,
           amount: order.amount,
-          price: makerBuyOrder.price,
+          price,
         });
         makerBuyOrder.amount -= order.amount;
         if (makerBuyOrder.amount === 0) {
@@ -71,7 +75,7 @@ export class Limit {
           takerOrderId: order.id,
           makerOrderId: makerBuyOrder.id,
           amount: makerBuyOrder.amount,
-          price: makerBuyOrder.price,
+          price,
         });
         order.amount -= makerBuyOrder.amount;
         this.book.removeBuyOrder(i);
