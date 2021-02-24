@@ -2,24 +2,7 @@ import { OrderBook } from 'engine/orderBook';
 import { Processor } from 'engine/processor';
 import flatten from 'lodash.flatten';
 import { Order, Trade } from 'types';
-
-const getMinPrice = (orders: Order[]): number => {
-  return orders.reduce((acc, each) => {
-    if (each.price < acc) {
-      acc = each.price;
-    }
-    return acc;
-  }, Infinity);
-};
-
-const getMaxPrice = (orders: Order[]): number => {
-  return orders.reduce((acc, each) => {
-    if (each.price > acc) {
-      acc = each.price;
-    }
-    return acc;
-  }, 0);
-};
+import { getMaxPrice } from 'utils';
 
 describe('Order Processor', () => {
   let processor = new Processor(new OrderBook());
@@ -117,7 +100,6 @@ describe('Order Processor', () => {
       { id: 3, amount: 33, price: 1.27, side: 'sell' },
       { id: 4, amount: 35, price: 1.29, side: 'sell' },
     ];
-    const minPrice = getMinPrice([buy, ...sells]);
     const maxPrice = getMaxPrice([buy, ...sells]);
     describe('when buys happen first', () => {
       const trades: Trade[] = [
