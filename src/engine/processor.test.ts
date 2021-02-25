@@ -9,6 +9,12 @@ describe('Order Processor', () => {
   beforeEach(() => {
     processor = new Processor(new OrderBook());
   });
+  it('should throw if invalid data passed', () => {
+    const order = {} as Order;
+    expect(() => processor.process(order)).toThrowError(
+      'Order side not recognized!'
+    );
+  });
   describe('a buy covered precisely by one sell order', () => {
     const buy: Order = { id: 1, amount: 100, price: 1.3, side: 'buy' };
     const sell: Order = { id: 2, amount: 100, price: 1.29, side: 'sell' };

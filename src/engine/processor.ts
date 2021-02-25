@@ -15,7 +15,7 @@ export class Processor {
     } else if (order.side === 'sell') {
       return this.limit.processSell(order);
     }
-    throw new Error('Side not recognized!');
+    throw new Error('Order side not recognized!');
   };
 }
 
