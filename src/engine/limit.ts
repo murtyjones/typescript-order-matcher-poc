@@ -29,18 +29,15 @@ export class Limit {
         }
         return trades;
       }
-      // try to fill a partial order and continue
-      if (makerSellOrder.amount < order.amount) {
-        trades.push({
-          takerOrderId: order.id,
-          makerOrderId: makerSellOrder.id,
-          amount: makerSellOrder.amount,
-          price,
-        });
-        order.amount -= makerSellOrder.amount;
-        this.book.removeSellOrder(i);
-        continue;
-      }
+      trades.push({
+        takerOrderId: order.id,
+        makerOrderId: makerSellOrder.id,
+        amount: makerSellOrder.amount,
+        price,
+      });
+      order.amount -= makerSellOrder.amount;
+      this.book.removeSellOrder(i);
+      continue;
     }
     this.book.add(order);
     return trades;
@@ -70,17 +67,15 @@ export class Limit {
         }
         return trades;
       }
-      if (makerBuyOrder.amount < order.amount) {
-        trades.push({
-          takerOrderId: order.id,
-          makerOrderId: makerBuyOrder.id,
-          amount: makerBuyOrder.amount,
-          price,
-        });
-        order.amount -= makerBuyOrder.amount;
-        this.book.removeBuyOrder(i);
-        continue;
-      }
+      trades.push({
+        takerOrderId: order.id,
+        makerOrderId: makerBuyOrder.id,
+        amount: makerBuyOrder.amount,
+        price,
+      });
+      order.amount -= makerBuyOrder.amount;
+      this.book.removeBuyOrder(i);
+      continue;
     }
     this.book.add(order);
     return trades;
