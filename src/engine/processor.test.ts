@@ -39,6 +39,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         expect(processor.book.sells.length).toBe(0);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...buy }),
+          processor.process({ ...sell }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
     describe('when buys happen second', () => {
       const trade: Trade = {
@@ -61,6 +68,13 @@ describe('Order Processor', () => {
         processor.process({ ...buy });
         expect(processor.book.sells.length).toBe(0);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...sell }),
+          processor.process({ ...buy }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
   });
   describe('a buy order with no matching sell', () => {
@@ -81,6 +95,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         expect(processor.book.sells.length).toBe(1);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...buy }),
+          processor.process({ ...sell }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
     describe('when buys happen second', () => {
       it('should return no trades', () => {
@@ -96,6 +117,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         processor.process({ ...buy });
         expect(processor.book.sells.length).toBe(1);
+      });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...sell }),
+          processor.process({ ...buy }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
       });
     });
   });
@@ -154,6 +182,13 @@ describe('Order Processor', () => {
         sells.map((each) => processor.process({ ...each }));
         expect(processor.book.sells[0]!.price).toBe(maxPrice);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...buy }),
+          flatten(sells.map((each) => processor.process({ ...each }))),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
 
     describe('when buys happen second', () => {
@@ -203,6 +238,13 @@ describe('Order Processor', () => {
         processor.process({ ...buy });
         expect(processor.book.sells[0]!.price).toBe(maxPrice);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          flatten(sells.map((each) => processor.process({ ...each }))),
+          processor.process({ ...buy }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
   });
   describe('a sell fully covered by multiple buys', () => {
@@ -243,6 +285,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         expect(processor.book.buys.length).toBe(2);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          flatten(buys.map((each) => processor.process({ ...each }))),
+          processor.process({ ...sell }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
     describe('when buying happens second', () => {
       const trades: Trade[] = [
@@ -280,6 +329,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         buys.map((each) => processor.process({ ...each }));
         expect(processor.book.buys.length).toBe(1);
+      });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...sell }),
+          flatten(buys.map((each) => processor.process({ ...each }))),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
       });
     });
   });
@@ -324,6 +380,13 @@ describe('Order Processor', () => {
         sells.map((each) => processor.process({ ...each }));
         expect(processor.book.sells[0]!.amount).toBe(sells[1]!.amount);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...buy }),
+          flatten(sells.map((each) => processor.process({ ...each }))),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
     describe('when buying happens second', () => {
       const trades: Trade[] = [
@@ -359,6 +422,13 @@ describe('Order Processor', () => {
         sells.map((each) => processor.process({ ...each }));
         processor.process({ ...buy });
         expect(processor.book.sells[0]!.amount).toBe(20);
+      });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          flatten(sells.map((each) => processor.process({ ...each }))),
+          processor.process({ ...buy }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
       });
     });
   });
@@ -410,6 +480,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         expect(processor.book.buys[0]!.amount).toBe(buys[0!]!.amount);
       });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          flatten(buys.map((each) => processor.process({ ...each }))),
+          processor.process({ ...sell }),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
+      });
     });
 
     describe('when buying happens second', () => {
@@ -452,6 +529,13 @@ describe('Order Processor', () => {
         processor.process({ ...sell });
         buys.map((each) => processor.process({ ...each }));
         expect(processor.book.buys[0]!.amount).toBe(1);
+      });
+      it('should return no trades with amounts of zero', () => {
+        const trades = flatten([
+          processor.process({ ...sell }),
+          flatten(buys.map((each) => processor.process({ ...each }))),
+        ]);
+        expect(trades.map((e) => e.amount).includes(0)).toBe(false);
       });
     });
   });
