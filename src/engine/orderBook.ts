@@ -6,7 +6,9 @@ export interface IOrderBook {
 }
 
 export class OrderBook implements IOrderBook {
+  // Buys are ordered lowest to highest price, with market orders at the end
   public buys: Order[] = [];
+  // Sells are ordered highest to lowest price, with market orders at the end
   public sells: Order[] = [];
 
   add = (order: Order): void => {
@@ -19,10 +21,17 @@ export class OrderBook implements IOrderBook {
   };
 
   private addBuyOrder = (order: Order): void => {
+    if (order.type === 'market') {
+      this.buys.push(order);
+      return;
+    }
     const l = this.buys.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
       const buyOrder = this.buys[i]!;
+      if (buyOrder.type === 'market') {
+        continue;
+      }
       if (buyOrder.price < order.price) {
         break;
       }
@@ -31,10 +40,17 @@ export class OrderBook implements IOrderBook {
   };
 
   private addSellOrder = (order: Order): void => {
+    if (order.type === 'market') {
+      this.sells.push(order);
+      return;
+    }
     const l = this.sells.length;
     let i = l - 1;
     for (; i >= 0; i -= 1) {
       const sellOrder = this.sells[i]!;
+      if (sellOrder.type === 'market') {
+        continue;
+      }
       if (sellOrder.price > order.price) {
         break;
       }

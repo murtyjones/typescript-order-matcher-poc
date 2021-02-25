@@ -2,7 +2,7 @@ import { Order } from 'types';
 
 export const getMinPrice = (orders: Order[]): number => {
   return orders.reduce((acc, each) => {
-    if (each.price < acc) {
+    if ('price' in each && each.price < acc) {
       acc = each.price;
     }
     return acc;
@@ -11,7 +11,7 @@ export const getMinPrice = (orders: Order[]): number => {
 
 export const getMaxPrice = (orders: Order[]): number => {
   return orders.reduce((acc, each) => {
-    if (each.price > acc) {
+    if ('price' in each && each.price > acc) {
       acc = each.price;
     }
     return acc;

@@ -1,11 +1,22 @@
 export type OrderId = number;
 
-export interface Order {
+interface BaseOrder {
   id: OrderId;
   amount: number;
-  price: number;
   side: 'buy' | 'sell';
+  type: 'market' | 'limit';
 }
+
+export interface LimitOrder extends BaseOrder {
+  price: number;
+  type: 'limit';
+}
+
+export interface MarketOrder extends BaseOrder {
+  type: 'market';
+}
+
+export type Order = MarketOrder | LimitOrder;
 
 export interface Trade {
   takerOrderId: number;

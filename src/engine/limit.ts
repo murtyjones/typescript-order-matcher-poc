@@ -1,20 +1,36 @@
 import { OrderBook } from 'engine/orderBook';
-import { Order, Trade } from 'types';
+import { LimitOrder, Trade } from 'types';
 
 export class Limit {
-  constructor(private book: OrderBook) {}
+  constructor(public book: OrderBook) {}
 
-  processBuy = (order: Order): Trade[] => {
+  process = (order: LimitOrder): Trade[] => {
+    if (order.side === 'buy') {
+      return this.processBuy(order);
+    } else if (order.side === 'sell') {
+      return this.processSell(order);
+    }
+    throw new Error('Order side not recognized!');
+  };
+
+  private processBuy = (order: LimitOrder): Trade[] => {
     const trades: Trade[] = [];
     const sellCount = this.book.sells.length;
     // Traverse all orders that match
     for (let i = sellCount - 1; i >= 0; i--) {
       const makerSellOrder = this.book.sells[i]!;
-      if (makerSellOrder.price > order.price) {
+      // If an agreement can no longer be found on price, exit
+      if ('price' in makerSellOrder && makerSellOrder.price > order.price) {
         break;
       }
-      // We always execute at the best price for the buyer
-      const price = Math.min(makerSellOrder.price, order.price);
+      /**
+       * We always execute at the best price for the buyer. If the maker is a
+       * market order, take the buyers price because there's no liquidity otherwise.
+       */
+      const price =
+        'price' in makerSellOrder
+          ? Math.min(makerSellOrder.price, order.price)
+          : order.price;
       // try to fill the full order
       if (makerSellOrder.amount >= order.amount) {
         trades.push({
@@ -43,16 +59,22 @@ export class Limit {
     return trades;
   };
 
-  processSell = (order: Order): Trade[] => {
+  private processSell = (order: LimitOrder): Trade[] => {
     const trades: Trade[] = [];
     const l = this.book.buys.length;
     for (let i = l - 1; i >= 0; i--) {
       const makerBuyOrder = this.book.buys[i]!;
-      if (makerBuyOrder.price < order.price) {
+      if ('price' in makerBuyOrder && makerBuyOrder.price < order.price) {
         break;
       }
-      // We always execute at the best price for the buyer
-      const price = Math.min(makerBuyOrder.price, order.price);
+      /**
+       * We always execute at the best price for the buyer. If the maker is a
+       * market order, take the seller's price because there's no liquidity otherwise.
+       */
+      const price =
+        'price' in makerBuyOrder
+          ? Math.min(makerBuyOrder.price, order.price)
+          : order.price;
       // try to fill entire order
       if (makerBuyOrder.amount >= order.amount) {
         trades.push({
