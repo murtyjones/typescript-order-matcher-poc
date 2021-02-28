@@ -8,7 +8,7 @@
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix --quiet",
-    "test": "jest"
+    "test": "jest --collectCoverage"
   },
   "keywords": [],
   "author": "",
