@@ -17,7 +17,6 @@ export class OrderBook implements IOrderBook {
     } else if (order.side === 'sell') {
       return this.addSellOrder(order);
     }
-    throw new Error('Order side not recognized!');
   };
 
   private addBuyOrder = (order: Order): void => {

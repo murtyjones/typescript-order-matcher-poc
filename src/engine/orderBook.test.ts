@@ -7,10 +7,6 @@ describe('Order Book', () => {
   beforeEach(() => {
     book = new OrderBook();
   });
-  it('should throw if invalid data passed', () => {
-    const order = {} as Order;
-    expect(() => book.add(order)).toThrowError('Order side not recognized!');
-  });
   it('should add a limit order to an empty book', () => {
     const order: Order = {
       id: 1,

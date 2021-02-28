@@ -13,9 +13,9 @@ describe('Order Processor', () => {
   });
   it('should throw if no order type passed', () => {
     const order = {} as Order;
-    expect(() => processor.process(order)).toThrowError(
-      'Order side not recognized!'
-    );
+    expect(() => {
+      processor.process(order);
+    }).toThrowError('Order side not recognized!');
   });
   describe('one market buy and one market sell', () => {
     const sell: MarketOrder = {
